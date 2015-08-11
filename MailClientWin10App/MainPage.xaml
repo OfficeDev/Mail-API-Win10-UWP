@@ -1,0 +1,123 @@
+﻿<Page
+    x:Class="MailClientWin10App.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MailClientWin10App"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:outlook="using:Microsoft.Office365.OutlookServices"
+    xmlns:converters="using:MailClientWin10App.Converters"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:EmailDateToStringConverter x:Key="EmailDateToStringConverter" />
+        <converters:NullableBoolVisibilityConverter x:Key="NullableBoolConverter" />
+
+        <DataTemplate x:Key="MasterListViewItemTemplate" x:DataType="outlook:IMessage">
+            <StackPanel Margin="12,11,12,13">
+                <Grid Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="{x:Bind From.EmailAddress.Name}" MaxLines="1"
+                           Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
+                           Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                    <SymbolIcon Symbol="Attach" Grid.Column="1" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" Visibility="{x:Bind HasAttachments,Converter={StaticResource NullableBoolConverter}}" />
+
+                </Grid>
+                <TextBlock Text="{x:Bind Subject}" Grid.Row="1" MaxLines="1"
+                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                           Style="{ThemeResource BodyTextBlockStyle}" Grid.ColumnSpan="2" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="{x:Bind BodyPreview}" Style="{ThemeResource BodyTextBlockStyle}" 
+                            Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                            MaxLines="1" />
+                    <TextBlock Text="{x:Bind DateTimeSent,Converter={StaticResource EmailDateToStringConverter}}" Grid.Column="1" Margin="12,2,0,0"
+                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                           Style="{ThemeResource BodyTextBlockStyle}" />
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DetailContentTemplate" x:DataType="outlook:IMessage">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel HorizontalAlignment="Stretch">
+                    <TextBlock Text="{x:Bind From.EmailAddress.Name}" Grid.Row="1" MaxLines="1"
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                       Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="{x:Bind DateTimeSent,Converter={StaticResource EmailDateToStringConverter}}" Grid.Row="2" Grid.Column="1" Margin="12,2,0,0"
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                       Style="{ThemeResource BodyTextBlockStyle}" />
+                    <TextBlock Margin="0,8" Style="{ThemeResource TitleTextBlockStyle}"
+                       HorizontalAlignment="Left" Text="{x:Bind Subject}"/>
+                </StackPanel>
+
+
+                <WebView x:Name="DetailContentWebView" converters:ControlExtensions.HTML="{x:Bind Body.Content}" 
+                        Width="{Binding VisibleWidth, ElementName=DetailColumn,Mode=OneWay}" VerticalAlignment="Stretch"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollMode="Auto" Grid.Row="1"
+                      />
+
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="MasterColumn" Width="320" />
+            <ColumnDefinition x:Name="DetailColumn" Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Inbox" Margin="24,8,8,8"
+                       Style="{ThemeResource TitleTextBlockStyle}" />
+            <AppBarButton Icon="Refresh" Grid.Column="1" x:Name="RefreshButton" Click="RefreshButton_Click" />
+        </Grid>
+
+        <ProgressRing x:Name="progressRing" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="8,24,8,0" Grid.Row="1"/>
+
+        <ListView x:Name="MasterListView" Grid.Row="1" ItemContainerTransitions="{x:Null}"
+                  ItemTemplate="{StaticResource MasterListViewItemTemplate}"
+                  IsItemClickEnabled="True"
+                  ItemClick="MasterListView_ItemClick">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundBaseLowBrush}" />
+                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <ContentPresenter
+        x:Name="DetailContentPresenter"
+        Grid.Column="1"
+        Grid.RowSpan="2"
+        BorderThickness="1,0,0,0"
+        Padding="24,0"
+        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+        Content="{x:Bind MasterListView.SelectedItem, Mode=OneWay}"
+        ContentTemplate="{StaticResource DetailContentTemplate}">
+        </ContentPresenter>
+    </Grid>
+</Page>
