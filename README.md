@@ -8,6 +8,7 @@ Note: If you are using the sample code just to try out the application you must 
 1. Open Visual Studio 2015.
 2. File | New | Project...
 3. Select Visual C# | Windows | Universal | Blank App (Universal Windows)
+4. Uncheck the box for *Show telemetry in the Windows Dev Center* because this is a sample project only. 
 4. Name the Project MailClientWin10App. Click **OK**
 5. In Solution Explorer right-click on References then click Add Connected Service. Select **Office 365 APIs** then click **Configure**.
 6. Enter you Office 365 developer domain (i.e. contosodev.onmicrosoft.com), click Next and enter your developer tenant credentials.
@@ -23,7 +24,7 @@ Let's first remove the ugly frame rate counter that shows up by default when deb
 
 ##Set up Office 365 Authentication##
 
-Now that the Office 365 Service refernece has been addded to the project, we can start developing code to authenticate against Azure Active Directory and retrieve email information from the Office 365 API. In order to generate the access token from Azure Active Directory we will use the [WebAccountProvider](https://msdn.microsoft.com/en-us/library/windows/apps/windows.security.credentials.webaccountprovider.aspx) class. To do this we will create an AuthUtil class our XAML page will use for authentication and creation of the Outlook client.
+Now that the Office 365 Service reference has been addded to the project, we can start developing code to authenticate against Azure Active Directory and retrieve email information from the Office 365 API. In order to generate the access token from Azure Active Directory we will use the [WebAccountProvider](https://msdn.microsoft.com/en-us/library/windows/apps/windows.security.credentials.webaccountprovider.aspx) class. To do this we will create an AuthUtil class our XAML page will use for authentication and creation of the Outlook client.
 
 1. Right-click on the project and create a new class (Add | Class) named AuthUtil.cs.
 2. Add the following using statements to the class:
@@ -31,7 +32,6 @@ Now that the Office 365 Service refernece has been addded to the project, we can
     ```csharp
     
     using Microsoft.Office365.OutlookServices;
-    using System.Threading.Tasks;
     using Windows.Security.Authentication.Web.Core;
     using Windows.Security.Credentials;
     
@@ -137,7 +137,7 @@ Create a new class named `EmailDateToStringConverter` within the Converter folde
         using System;
         using Windows.UI.Xaml.Data;
     
-        namespace Spark.Life.Helpers
+        namespace MailClientWin10App.Converters 
         {
             class EmailDateToStringConverter : IValueConverter
             {
@@ -353,101 +353,110 @@ Now that we have the inbox displaying properly, let's create XAML and code to di
 
 We will add another DataTemplate that contains a simple grid containing a stack panel for the header and a WebView for displaying the HTML. However, before we can use binding with the web view, we first need to add a control extension.
 
-Right-click on the Converters folder and add a new class named ControlExtensions. Add the following code:
+1. Right-click on the Converters folder and add a new class named ControlExtensions. Add the following code:
 
-```csharp
-
-    using Windows.UI.Xaml;
-    using Windows.UI.Xaml.Controls;
-
-    namespace MailClientWin10App.Converters
-    {
-        class ControlExtensions
+    ```csharp
+    
+        using Windows.UI.Xaml;
+        using Windows.UI.Xaml.Controls;
+    
+        namespace MailClientWin10App.Converters
         {
-
-            public static string GetHTML(DependencyObject obj)
+            class ControlExtensions
             {
-                return (string)obj.GetValue(HTMLProperty);
-            }
-
-            public static void SetHTML(DependencyObject obj, string value)
-            {
-                obj.SetValue(HTMLProperty, value);
-            }
-
-            // Using a DependencyProperty as the backing store for HTML.  This enables animation, styling, binding, etc...  
-            public static readonly DependencyProperty HTMLProperty =
-                DependencyProperty.RegisterAttached("HTML", typeof(string), typeof(ControlExtensions), new PropertyMetadata(0, new PropertyChangedCallback(OnHTMLChanged)));
-
-            private static void OnHTMLChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-            {
-                WebView wv = d as WebView;
-                if (wv != null)
+    
+                public static string GetHTML(DependencyObject obj)
                 {
-                    wv.NavigateToString((string)e.NewValue);
+                    return (string)obj.GetValue(HTMLProperty);
                 }
+    
+                public static void SetHTML(DependencyObject obj, string value)
+                {
+                    obj.SetValue(HTMLProperty, value);
+                }
+    
+                // Using a DependencyProperty as the backing store for HTML.  This enables animation, styling, binding, etc...  
+                public static readonly DependencyProperty HTMLProperty =
+                    DependencyProperty.RegisterAttached("HTML", typeof(string), typeof(ControlExtensions), new PropertyMetadata(0, new PropertyChangedCallback(OnHTMLChanged)));
+    
+                private static void OnHTMLChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+                {
+                    WebView wv = d as WebView;
+                    if (wv != null)
+                    {
+                        wv.NavigateToString((string)e.NewValue);
+                    }
+                }
+    
+    
             }
-
-
         }
-    }
+    
+    
+    ```
 
+2. Open MainPage.xaml again and insert the following template just after the `<Page.Resources>` tag.
 
-```
+    ```xml
+        <converters:EmailDateToStringConverter x:Key="EmailDateToStringConverter" />
+        <converters:NullableBoolVisibilityConverter x:Key="NullableBoolConverter" />
+    ```
 
-Now, let's get back to the XAML. Open MainPage.xaml again and insert the following template just before the `</Page.Resources>` tag.
+3. Open MainPage.xaml again and insert the following template just before the `</Page.Resources>` tag.
 
-``` xml
+    ``` xml
+    
+        <DataTemplate x:Key="DetailContentTemplate" x:DataType="outlook:IMessage">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+    
+                <StackPanel HorizontalAlignment="Stretch">
+                    <TextBlock Text="{x:Bind From.EmailAddress.Name}" Grid.Row="1" MaxLines="1"
+                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                           Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="{x:Bind DateTimeSent,Converter={StaticResource EmailDateToStringConverter}}" Grid.Row="2" Grid.Column="1" Margin="12,2,0,0"
+                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                           Style="{ThemeResource BodyTextBlockStyle}" />
+                    <TextBlock Margin="0,8" Style="{ThemeResource TitleTextBlockStyle}"
+                           HorizontalAlignment="Left" Text="{x:Bind Subject}"/>
+                </StackPanel>
+    
+                
+                <WebView x:Name="DetailContentWebView" converters:ControlExtensions.HTML="{x:Bind Body.Content}" 
+                            Width="{Binding VisibleWidth, ElementName=DetailColumn,Mode=OneWay}" VerticalAlignment="Stretch"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollMode="Auto" Grid.Row="1"
+                          />
+                
+            </Grid>
+        </DataTemplate>
+    
+    ```
 
-    <DataTemplate x:Key="DetailContentTemplate" x:DataType="outlook:IMessage">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+4. Add a content presenter control just before the final `</Grid>` tag on the page:
 
-            <StackPanel HorizontalAlignment="Stretch">
-                <TextBlock Text="{x:Bind From.EmailAddress.Name}" Grid.Row="1" MaxLines="1"
-                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                       Style="{ThemeResource SubtitleTextBlockStyle}" />
-                <TextBlock Text="{x:Bind DateTimeSent,Converter={StaticResource EmailDateToStringConverter}}" Grid.Row="2" Grid.Column="1" Margin="12,2,0,0"
-                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                       Style="{ThemeResource BodyTextBlockStyle}" />
-                <TextBlock Margin="0,8" Style="{ThemeResource TitleTextBlockStyle}"
-                       HorizontalAlignment="Left" Text="{x:Bind Subject}"/>
-            </StackPanel>
+    ```xml
+    
+        <ContentPresenter
+            x:Name="DetailContentPresenter"
+            Grid.Column="1"
+            Grid.RowSpan="2"
+            BorderThickness="1,0,0,0"
+            Padding="24,0"
+            BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+            Content="{x:Bind MasterListView.SelectedItem, Mode=OneWay}"
+            ContentTemplate="{StaticResource DetailContentTemplate}">
+        </ContentPresenter>
+    
+    
+    ```
 
-            
-            <WebView x:Name="DetailContentWebView" converters:ControlExtensions.HTML="{x:Bind Body.Content}" 
-                        Width="{Binding VisibleWidth, ElementName=DetailColumn,Mode=OneWay}" VerticalAlignment="Stretch"
-                        ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollMode="Auto" Grid.Row="1"
-                      />
-            
-        </Grid>
-    </DataTemplate>
-
-
-```
-
-Now, let's add a content presenter control just before the final `</Grid>` tag on the page:
-
-```xaml
-
-    <ContentPresenter
-        x:Name="DetailContentPresenter"
-        Grid.Column="1"
-        Grid.RowSpan="2"
-        BorderThickness="1,0,0,0"
-        Padding="24,0"
-        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
-        Content="{x:Bind MasterListView.SelectedItem, Mode=OneWay}"
-        ContentTemplate="{StaticResource DetailContentTemplate}">
-    </ContentPresenter>
-
-
-```
-## Contgratulations! ##
+## Congratulations! ##
 
 You just built a working Office 365 inbox viewer in Windows 10.
+
+Press F5 to run your project and test your application.
 
 ![Working Inbox Viewer](http://i.imgur.com/FzKa44c.png)
