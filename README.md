@@ -98,32 +98,32 @@ The `NullableBoolVisibilityConverter` class will convert from a nullable bool in
 Create a new class named `NullableBoolVisibilityConverter` within the Converters folder and insert the following code:
 
     ```csharp
-    
-        using System;
-        using Windows.UI.Xaml;
-        using Windows.UI.Xaml.Data;
-    
-        namespace MailClientWin10App.Converters
-        {
-            class NullableBoolVisibilityConverter : IValueConverter
-            {
-                public object Convert(object value, Type targetType, object parameter, string language)
-                {
-                    bool? b = value as bool?;
-                    if (b == null || !b.HasValue || !b.Value)
-                        return Visibility.Collapsed;
-                    else
-                        return Visibility.Visible;
-                    //if (b.Value) return Visibility.Visible;
-                    //else return Visibility.Collapsed;
-                }
-    
-                public object ConvertBack(object value, Type targetType, object parameter, string language)
-                {
-                    throw new NotImplementedException();
-                }
-            }
-        }
+	
+	using System;
+	using Windows.UI.Xaml;
+	using Windows.UI.Xaml.Data;
+
+	namespace MailClientWin10App.Converters
+	{
+		class NullableBoolVisibilityConverter : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, string language)
+			{
+				bool? b = value as bool?;
+				if (b == null || !b.HasValue || !b.Value)
+					return Visibility.Collapsed;
+				else
+					return Visibility.Visible;
+				//if (b.Value) return Visibility.Visible;
+				//else return Visibility.Collapsed;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, string language)
+			{
+				throw new NotImplementedException();
+			}
+		}
+	}
     
     ```
 
@@ -133,49 +133,48 @@ The `EmailDateToStringConverter` will do basic date formatting to show dates in 
 Create a new class named `EmailDateToStringConverter` within the Converter folder and insert the following code:
 
     ```csharp
-    
-        using System;
-        using Windows.UI.Xaml.Data;
-    
-        namespace MailClientWin10App.Converters 
-        {
-            class EmailDateToStringConverter : IValueConverter
-            {
-                public object Convert(object value, Type targetType, object parameter, string language)
-                {
-                    DateTimeOffset? dateVal = value as DateTimeOffset?;
-                    if (dateVal == null || !dateVal.HasValue)
-                        return value;
-    
-                    var myDate = dateVal.Value.ToLocalTime();
-                    string retVal = string.Empty;
-                    if (myDate.Date == DateTime.Today)
-                    {
-                        retVal = myDate.ToString("h:mm tt");
-                    }
-                    else if (myDate.Date > DateTime.Today.AddDays(-6))
-                    {
-                        retVal = myDate.ToString("ddd h:mm tt");
-                    }
-                    else if (myDate.Year == DateTime.Today.Year)
-                    {
-                        retVal = myDate.Date.ToString("ddd M/dd");
-                    }
-                    else
-                    {
-                        retVal = myDate.Date.ToString("ddd M/dd/yy");
-                    }
-    
-                    return retVal;
-                }
-    
-                public object ConvertBack(object value, Type targetType, object parameter, string language)
-                {
-                    throw new NotImplementedException();
-                }
-            }
-        }
-    
+
+	using System;
+	using Windows.UI.Xaml.Data;
+
+	namespace MailClientWin10App.Converters 
+	{
+		class EmailDateToStringConverter : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, string language)
+			{
+				DateTimeOffset? dateVal = value as DateTimeOffset?;
+				if (dateVal == null || !dateVal.HasValue)
+					return value;
+
+				var myDate = dateVal.Value.ToLocalTime();
+				string retVal = string.Empty;
+				if (myDate.Date == DateTime.Today)
+				{
+					retVal = myDate.ToString("h:mm tt");
+				}
+				else if (myDate.Date > DateTime.Today.AddDays(-6))
+				{
+					retVal = myDate.ToString("ddd h:mm tt");
+				}
+				else if (myDate.Year == DateTime.Today.Year)
+				{
+					retVal = myDate.Date.ToString("ddd M/dd");
+				}
+				else
+				{
+					retVal = myDate.Date.ToString("ddd M/dd/yy");
+				}
+
+				return retVal;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, string language)
+			{
+				throw new NotImplementedException();
+			}
+		}
+	}
     
     ```
 
@@ -195,44 +194,44 @@ Modify the MainPage.xaml.cs file to test the connection to Office 365.
 3. Before the opening `<Grid` tag, we will add our converters and a template to render the list of emails. Add the following code:
 
     ```xml
-    
-        <Page.Resources>   
-            <DataTemplate x:Key="MasterListViewItemTemplate" x:DataType="outlook:IMessage">
-                <StackPanel Margin="12,11,12,13">
-                    <Grid Grid.ColumnSpan="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-    
-                        <TextBlock Text="{x:Bind From.EmailAddress.Name}" MaxLines="1"
-                               Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
-                               Style="{ThemeResource SubtitleTextBlockStyle}" />
-    
-                        <SymbolIcon Symbol="Attach" Grid.Column="1" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" Visibility="{x:Bind HasAttachments,Converter={StaticResource NullableBoolConverter}}" />
-    
-                    </Grid>
-                    <TextBlock Text="{x:Bind Subject}" Grid.Row="1" MaxLines="1"
-                               Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                               Style="{ThemeResource BodyTextBlockStyle}" Grid.ColumnSpan="2" />
-    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-    
-                        <TextBlock Text="{x:Bind BodyPreview}" Style="{ThemeResource BodyTextBlockStyle}" 
-                                Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                                MaxLines="1" />
-                        <TextBlock Text="{x:Bind DateTimeSent}" Grid.Column="1" Margin="12,2,0,0"
-                               Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                               Style="{ThemeResource BodyTextBlockStyle}" />
-                    </Grid>
-                </StackPanel>
-            </DataTemplate>
-    
-        </Page.Resources>
+
+	<Page.Resources>   
+		<DataTemplate x:Key="MasterListViewItemTemplate" x:DataType="outlook:IMessage">
+			<StackPanel Margin="12,11,12,13">
+				<Grid Grid.ColumnSpan="2">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+
+					<TextBlock Text="{x:Bind From.EmailAddress.Name}" MaxLines="1"
+						   Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
+						   Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+					<SymbolIcon Symbol="Attach" Grid.Column="1" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" Visibility="{x:Bind HasAttachments,Converter={StaticResource NullableBoolConverter}}" />
+
+				</Grid>
+				<TextBlock Text="{x:Bind Subject}" Grid.Row="1" MaxLines="1"
+						   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+						   Style="{ThemeResource BodyTextBlockStyle}" Grid.ColumnSpan="2" />
+
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+
+					<TextBlock Text="{x:Bind BodyPreview}" Style="{ThemeResource BodyTextBlockStyle}" 
+							Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+							MaxLines="1" />
+					<TextBlock Text="{x:Bind DateTimeSent}" Grid.Column="1" Margin="12,2,0,0"
+						   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+						   Style="{ThemeResource BodyTextBlockStyle}" />
+				</Grid>
+			</StackPanel>
+		</DataTemplate>
+
+	</Page.Resources>
     
     ```
 
@@ -240,14 +239,14 @@ Modify the MainPage.xaml.cs file to test the connection to Office 365.
 
     ```xml
     
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="MasterColumn" Width="320" />
-                <ColumnDefinition x:Name="DetailColumn" Width="*" />
-            </Grid.ColumnDefinitions>
+	<Grid.RowDefinitions>
+		<RowDefinition Height="Auto" />
+		<RowDefinition Height="*" />
+	</Grid.RowDefinitions>
+	<Grid.ColumnDefinitions>
+		<ColumnDefinition x:Name="MasterColumn" Width="320" />
+		<ColumnDefinition x:Name="DetailColumn" Width="*" />
+	</Grid.ColumnDefinitions>
     
     ```
 
@@ -255,17 +254,17 @@ Modify the MainPage.xaml.cs file to test the connection to Office 365.
 
     ```xml
     
-            <Grid Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Inbox" Margin="24,8,8,8"
-                           Style="{ThemeResource TitleTextBlockStyle}" />
-                <AppBarButton Icon="Refresh" Grid.Column="1" x:Name="RefreshButton" Click="RefreshButton_Click" />
-            </Grid>
-    
-            <ProgressRing x:Name="progressRing" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="8,24,8,0" Grid.Row="1"/>
+	<Grid Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto"/>
+		</Grid.ColumnDefinitions>
+		<TextBlock Text="Inbox" Margin="24,8,8,8"
+				   Style="{ThemeResource TitleTextBlockStyle}" />
+		<AppBarButton Icon="Refresh" Grid.Column="1" x:Name="RefreshButton" Click="RefreshButton_Click" />
+	</Grid>
+
+	<ProgressRing x:Name="progressRing" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="8,24,8,0" Grid.Row="1"/>
     
     ```
 
@@ -273,18 +272,18 @@ Modify the MainPage.xaml.cs file to test the connection to Office 365.
 
     ```xml
     
-            <ListView x:Name="MasterListView" Grid.Row="1" ItemContainerTransitions="{x:Null}"
-                      ItemTemplate="{StaticResource MasterListViewItemTemplate}"
-                      IsItemClickEnabled="True"
-                      ItemClick="MasterListView_ItemClick">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundBaseLowBrush}" />
-                        <Setter Property="BorderThickness" Value="0,0,0,1" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
+	<ListView x:Name="MasterListView" Grid.Row="1" ItemContainerTransitions="{x:Null}"
+			  ItemTemplate="{StaticResource MasterListViewItemTemplate}"
+			  IsItemClickEnabled="True"
+			  ItemClick="MasterListView_ItemClick">
+		<ListView.ItemContainerStyle>
+			<Style TargetType="ListViewItem">
+				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				<Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundBaseLowBrush}" />
+				<Setter Property="BorderThickness" Value="0,0,0,1" />
+			</Style>
+		</ListView.ItemContainerStyle>
+	</ListView>
     
     ```
 
@@ -293,19 +292,19 @@ Modify the MainPage.xaml.cs file to test the connection to Office 365.
 
     ```csharp
     
-            private async void LoadEmailMessagesFromOffice365()
-            {
-                MasterListView.ItemsSource = null;
-                progressRing.IsActive = true;
-                
-                var outlookClient = await AuthUtil.EnsureClient();
-    
-                var messages = await outlookClient.Me.Folders["Inbox"].Messages.OrderByDescending(m => m.DateTimeReceived).Take(50).ExecuteAsync();
-    
-                progressRing.IsActive = false;
-    
-                MasterListView.ItemsSource = messages.CurrentPage;
-            }
+	private async void LoadEmailMessagesFromOffice365()
+	{
+		MasterListView.ItemsSource = null;
+		progressRing.IsActive = true;
+		
+		var outlookClient = await AuthUtil.EnsureClient();
+
+		var messages = await outlookClient.Me.Folders["Inbox"].Messages.OrderByDescending(m => m.DateTimeReceived).Take(50).ExecuteAsync();
+
+		progressRing.IsActive = false;
+
+		MasterListView.ItemsSource = messages.CurrentPage;
+	}
     
     ```
 
@@ -313,20 +312,20 @@ Modify the MainPage.xaml.cs file to test the connection to Office 365.
 
     ```chsarp
     
-            private void RefreshButton_Click(object sender, RoutedEventArgs e)
-            {
-                LoadEmailMessagesFromOffice365();
-            }
-            protected override void OnNavigatedTo(NavigationEventArgs e)
-            {
-                base.OnNavigatedTo(e);
-                LoadEmailMessagesFromOffice365();
-            }
-    
-            private void MasterListView_ItemClick(object sender, ItemClickEventArgs e)
-            {
-    
-            }
+	private void RefreshButton_Click(object sender, RoutedEventArgs e)
+	{
+		LoadEmailMessagesFromOffice365();
+	}
+	protected override void OnNavigatedTo(NavigationEventArgs e)
+	{
+		base.OnNavigatedTo(e);
+		LoadEmailMessagesFromOffice365();
+	}
+
+	private void MasterListView_ItemClick(object sender, ItemClickEventArgs e)
+	{
+
+	}
     
     ```
 3. Run your project using Local Machine:
@@ -357,40 +356,40 @@ We will add another DataTemplate that contains a simple grid containing a stack 
 
     ```csharp
     
-        using Windows.UI.Xaml;
-        using Windows.UI.Xaml.Controls;
-    
-        namespace MailClientWin10App.Converters
-        {
-            class ControlExtensions
-            {
-    
-                public static string GetHTML(DependencyObject obj)
-                {
-                    return (string)obj.GetValue(HTMLProperty);
-                }
-    
-                public static void SetHTML(DependencyObject obj, string value)
-                {
-                    obj.SetValue(HTMLProperty, value);
-                }
-    
-                // Using a DependencyProperty as the backing store for HTML.  This enables animation, styling, binding, etc...  
-                public static readonly DependencyProperty HTMLProperty =
-                    DependencyProperty.RegisterAttached("HTML", typeof(string), typeof(ControlExtensions), new PropertyMetadata(0, new PropertyChangedCallback(OnHTMLChanged)));
-    
-                private static void OnHTMLChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-                {
-                    WebView wv = d as WebView;
-                    if (wv != null)
-                    {
-                        wv.NavigateToString((string)e.NewValue);
-                    }
-                }
-    
-    
-            }
-        }
+	using Windows.UI.Xaml;
+	using Windows.UI.Xaml.Controls;
+
+	namespace MailClientWin10App.Converters
+	{
+		class ControlExtensions
+		{
+
+			public static string GetHTML(DependencyObject obj)
+			{
+				return (string)obj.GetValue(HTMLProperty);
+			}
+
+			public static void SetHTML(DependencyObject obj, string value)
+			{
+				obj.SetValue(HTMLProperty, value);
+			}
+
+			// Using a DependencyProperty as the backing store for HTML.  This enables animation, styling, binding, etc...  
+			public static readonly DependencyProperty HTMLProperty =
+				DependencyProperty.RegisterAttached("HTML", typeof(string), typeof(ControlExtensions), new PropertyMetadata(0, new PropertyChangedCallback(OnHTMLChanged)));
+
+			private static void OnHTMLChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+			{
+				WebView wv = d as WebView;
+				if (wv != null)
+				{
+					wv.NavigateToString((string)e.NewValue);
+				}
+			}
+
+
+		}
+	}
     
     
     ```
@@ -406,32 +405,32 @@ We will add another DataTemplate that contains a simple grid containing a stack 
 
     ``` xml
     
-        <DataTemplate x:Key="DetailContentTemplate" x:DataType="outlook:IMessage">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-    
-                <StackPanel HorizontalAlignment="Stretch">
-                    <TextBlock Text="{x:Bind From.EmailAddress.Name}" Grid.Row="1" MaxLines="1"
-                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                           Style="{ThemeResource SubtitleTextBlockStyle}" />
-                    <TextBlock Text="{x:Bind DateTimeSent,Converter={StaticResource EmailDateToStringConverter}}" Grid.Row="2" Grid.Column="1" Margin="12,2,0,0"
-                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                           Style="{ThemeResource BodyTextBlockStyle}" />
-                    <TextBlock Margin="0,8" Style="{ThemeResource TitleTextBlockStyle}"
-                           HorizontalAlignment="Left" Text="{x:Bind Subject}"/>
-                </StackPanel>
-    
-                
-                <WebView x:Name="DetailContentWebView" converters:ControlExtensions.HTML="{x:Bind Body.Content}" 
-                            Width="{Binding VisibleWidth, ElementName=DetailColumn,Mode=OneWay}" VerticalAlignment="Stretch"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollMode="Auto" Grid.Row="1"
-                          />
-                
-            </Grid>
-        </DataTemplate>
+	<DataTemplate x:Key="DetailContentTemplate" x:DataType="outlook:IMessage">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+
+			<StackPanel HorizontalAlignment="Stretch">
+				<TextBlock Text="{x:Bind From.EmailAddress.Name}" Grid.Row="1" MaxLines="1"
+					   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+					   Style="{ThemeResource SubtitleTextBlockStyle}" />
+				<TextBlock Text="{x:Bind DateTimeSent,Converter={StaticResource EmailDateToStringConverter}}" Grid.Row="2" Grid.Column="1" Margin="12,2,0,0"
+					   Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+					   Style="{ThemeResource BodyTextBlockStyle}" />
+				<TextBlock Margin="0,8" Style="{ThemeResource TitleTextBlockStyle}"
+					   HorizontalAlignment="Left" Text="{x:Bind Subject}"/>
+			</StackPanel>
+
+			
+			<WebView x:Name="DetailContentWebView" converters:ControlExtensions.HTML="{x:Bind Body.Content}" 
+						Width="{Binding VisibleWidth, ElementName=DetailColumn,Mode=OneWay}" VerticalAlignment="Stretch"
+						ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollMode="Auto" Grid.Row="1"
+					  />
+			
+		</Grid>
+	</DataTemplate>
     
     ```
 
@@ -439,16 +438,16 @@ We will add another DataTemplate that contains a simple grid containing a stack 
 
     ```xml
     
-        <ContentPresenter
-            x:Name="DetailContentPresenter"
-            Grid.Column="1"
-            Grid.RowSpan="2"
-            BorderThickness="1,0,0,0"
-            Padding="24,0"
-            BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
-            Content="{x:Bind MasterListView.SelectedItem, Mode=OneWay}"
-            ContentTemplate="{StaticResource DetailContentTemplate}">
-        </ContentPresenter>
+	<ContentPresenter
+		x:Name="DetailContentPresenter"
+		Grid.Column="1"
+		Grid.RowSpan="2"
+		BorderThickness="1,0,0,0"
+		Padding="24,0"
+		BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+		Content="{x:Bind MasterListView.SelectedItem, Mode=OneWay}"
+		ContentTemplate="{StaticResource DetailContentTemplate}">
+	</ContentPresenter>
     
     
     ```
