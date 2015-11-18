@@ -19,7 +19,7 @@ namespace MailClientWin10App
             WebAccountProvider aadAccountProvider = await WebAuthenticationCoreManager.FindAccountProviderAsync("https://login.windows.net");
             WebTokenRequest webTokenRequest = new WebTokenRequest(aadAccountProvider, String.Empty, App.Current.Resources["ida:ClientID"].ToString(), WebTokenRequestPromptType.Default);
             webTokenRequest.Properties.Add("authority", "https://login.windows.net");
-            webTokenRequest.Properties.Add("resource", "https://outlook.office365.com/");
+            webTokenRequest.Properties.Add("resource", "https://outlook.office.com/");
             WebTokenRequestResult webTokenRequestResult = await WebAuthenticationCoreManager.GetTokenSilentlyAsync(webTokenRequest);
             if (webTokenRequestResult.ResponseStatus == WebTokenRequestStatus.Success)
             {
@@ -31,7 +31,7 @@ namespace MailClientWin10App
                 //get token through prompt
                 webTokenRequest = new WebTokenRequest(aadAccountProvider, String.Empty, App.Current.Resources["ida:ClientID"].ToString(), WebTokenRequestPromptType.ForceAuthentication);
                 webTokenRequest.Properties.Add("authority", "https://login.windows.net");
-                webTokenRequest.Properties.Add("resource", "https://outlook.office365.com/");
+                webTokenRequest.Properties.Add("resource", "https://outlook.office.com/");
                 webTokenRequestResult = await WebAuthenticationCoreManager.RequestTokenAsync(webTokenRequest);
                 if (webTokenRequestResult.ResponseStatus == WebTokenRequestStatus.Success)
                 {
@@ -45,7 +45,7 @@ namespace MailClientWin10App
 
         public static async Task<OutlookServicesClient> EnsureClient()
         {
-            return new OutlookServicesClient(new Uri("https://outlook.office365.com/ews/odata"), async () => {
+            return new OutlookServicesClient(new Uri("https://outlook.office.com/api/v1.0"), async () => {
                 return await GetAccessToken();
             });
         }
