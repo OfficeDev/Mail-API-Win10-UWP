@@ -183,7 +183,7 @@ Create a new class named `EmailDateToStringConverter` within the Converter folde
 Modify the MainPage.xaml.cs file to test the connection to Office 365.
  
 1. Open MainPage.xaml and change the display to *13.3" Desktop (1280 x 720) 100% scale*:
- ![](http://i.imgur.com/nbTWSTn.png)
+ ![MainPage display settings dropdown set to 1280 by 720](http://i.imgur.com/nbTWSTn.png)
 2. We need to import the a few namespaces so that we can reference them within our XAML. Add the following within the `<Page` element: 
 
     ```xml
