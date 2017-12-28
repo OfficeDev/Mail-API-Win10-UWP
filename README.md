@@ -459,3 +459,6 @@ You just built a working Office 365 inbox viewer in Windows 10.
 Press F5 to run your project and test your application.
 
 ![Working Inbox Viewer](http://i.imgur.com/FzKa44c.png)
+
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information, see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
