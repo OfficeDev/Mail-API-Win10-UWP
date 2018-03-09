@@ -1,4 +1,4 @@
-#Office 365 Inbox Viewer for Windows 10#
+# Office 365 Inbox Viewer for Windows 10
 
 I recently had a need to view an Office 365 email inbox for quick triage and task assignment as part of a larger project. This tutorial describes how to create a mail client for an Office 365 inbox.
 
